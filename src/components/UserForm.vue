@@ -1,4 +1,6 @@
 <script setup>
+import {ref, watch} from "vue";
+
 const props = defineProps({
   userData: Object,
   isSubmitting: {
@@ -9,16 +11,57 @@ const props = defineProps({
 
 const emit = defineEmits(['submit'])
 
+const errors = ref([])
+
+watch(() => props.userData.name, (newValue) => {
+  if (newValue && hasError('name')) {
+    removeError('name')
+  }
+})
+
+watch(() => props.userData.phone, (newValue) => {
+  if (newValue && hasError('phone')) {
+    removeError('phone')
+  }
+})
+
 const handleSubmit = () => {
   if (props.isSubmitting) return;
-  
-  // Валидация
+
+  errors.value = []
+
+  if (!props.userData.name) {
+    errors.value.push({
+      field: 'name',
+      message: 'Поле имя обязательно к заполнению'
+    })
+  }
+
+  if (!props.userData.phone) {
+    errors.value.push({
+      field: 'phone',
+      message: 'Поле телефон обязательно к заполнению'
+    })
+  }
+
   if (!props.userData.name || !props.userData.phone) {
-    alert('Пожалуйста, заполните все поля');
     return;
   }
 
   emit('submit');
+}
+
+const hasError = (fieldName) => {
+  return errors.value.some(error => error.field === fieldName)
+}
+
+const getError = (fieldName) => {
+  const error = errors.value.find(error => error.field === fieldName)
+  return error ? error.message : ''
+}
+
+const removeError = (fieldName) => {
+  errors.value = errors.value.filter(error => error.field !== fieldName)
 }
 </script>
 
@@ -27,7 +70,8 @@ const handleSubmit = () => {
     <div class="form-header">
       <div class="success-icon">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+          <path
+              d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
         </svg>
       </div>
       <h2 class="form-title">Отлично! Вы прошли тест</h2>
@@ -38,47 +82,60 @@ const handleSubmit = () => {
       <div class="form-group">
         <label class="form-label">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+            <path
+                d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
           </svg>
           Ваше имя
         </label>
-        <input 
-          v-model.trim="userData.name"
-          type="text"
-          placeholder="Введите ваше имя" 
-          class="form-input"
-          required
+        <input
+            v-model.trim="userData.name"
+            type="text"
+            placeholder="Введите ваше имя"
+            class="form-input"
+            :class="{ 'error': hasError('name') }"
+            required
         >
+        <div v-if="hasError('name')" class="error-message">
+          {{ getError('name') }}
+        </div>
       </div>
 
       <div class="form-group">
         <label class="form-label">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/>
+            <path
+                d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/>
           </svg>
           Номер телефона
         </label>
-        <input 
-          v-model.trim="userData.phone"
-          type="tel"
-          placeholder="+7 (___) ___-__-__" 
-          class="form-input"
-          required
+        <input
+            v-model.trim="userData.phone"
+            type="tel"
+            placeholder="+7 (___) ___-__-__"
+            class="form-input"
+            :class="{ 'error': hasError('phone') }"
+            required
         >
+        <div v-if="hasError('phone')" class="error-message">
+          {{ getError('phone') }}
+        </div>
       </div>
 
-      <button class="submit-button" @click="handleSubmit" :disabled="isSubmitting" :class="{ 'is-loading': isSubmitting }">
+      <button class="submit-button" @click="handleSubmit" :disabled="isSubmitting"
+              :class="{ 'is-loading': isSubmitting }">
         <span class="button-icon" v-show="!isSubmitting">🎉</span>
         <div class="spinner" v-show="isSubmitting"></div>
         <span>{{ isSubmitting ? 'Отправка...' : 'Получить расчёт стоимости' }}</span>
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="button-arrow" v-show="!isSubmitting">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="button-arrow"
+             v-show="!isSubmitting">
           <path d="M8.59 16.59L10 18l6-6-6-6-1.41 1.41L13.17 12z"/>
         </svg>
       </button>
 
       <p class="privacy-notice">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-          <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/>
+          <path
+              d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/>
         </svg>
         Нажимая кнопку, вы соглашаетесь с политикой конфиденциальности
       </p>
@@ -207,6 +264,21 @@ const handleSubmit = () => {
 
 .form-input::placeholder {
   color: #a0aec0;
+}
+
+.form-input.error {
+  border-color: #fd7171;
+  box-shadow: 0 0 0 4px rgb(234 102 102 / 19%);
+}
+
+.error-message {
+  color: #ff4444;
+  font-size: 12px;
+  margin-top: 4px;
+}
+
+.error-message::before {
+  font-size: 14px;
 }
 
 .submit-button {

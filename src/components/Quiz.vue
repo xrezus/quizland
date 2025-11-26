@@ -258,11 +258,7 @@ const submitQuiz = async () => {
                     </div>
                   </div>
                   <span class="option-label">{{ option.variant }}</span>
-                  <div class="option-check" v-show="selectedAnswers[ind] === index">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                      <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
-                    </svg>
-                  </div>
+
                 </div>
 
                 <!-- Multiple Choice Options (Checkbox) -->
@@ -282,11 +278,6 @@ const submitQuiz = async () => {
                     </div>
                   </div>
                   <span class="option-label">{{ option.variant }}</span>
-                  <div class="option-check" v-show="isOptionSelected(ind, index)">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                      <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
-                    </svg>
-                  </div>
                 </div>
               </div>
             </div>
@@ -352,7 +343,7 @@ const submitQuiz = async () => {
 .quiz-container {
   max-width: 800px;
   width: 100%;
-  background: rgba(255, 255, 255, 0.98);
+  background: rgba(250, 250, 250, 0.98);
   backdrop-filter: blur(10px);
   border-radius: 24px;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
@@ -632,28 +623,9 @@ const submitQuiz = async () => {
   font-weight: 600;
 }
 
-.option-check {
-  width: 24px;
-  height: 24px;
-  color: #667eea;
-  animation: checkScale 0.3s ease;
-}
-
 .option-check svg {
   width: 100%;
   height: 100%;
-}
-
-@keyframes checkScale {
-  0% {
-    transform: scale(0) rotate(-45deg);
-  }
-  50% {
-    transform: scale(1.2) rotate(0deg);
-  }
-  100% {
-    transform: scale(1) rotate(0deg);
-  }
 }
 
 /* Footer */
@@ -742,7 +714,7 @@ const submitQuiz = async () => {
   font-size: 1.1rem;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s ease;
+/*  transition: all 0.3s ease;*/
   min-width: 140px;
   justify-content: center;
 }
@@ -761,7 +733,6 @@ const submitQuiz = async () => {
 .btn-back:hover {
   background: #edf2f7;
   border-color: #cbd5e0;
-  transform: translateX(-4px);
 }
 
 .btn-next {
@@ -771,13 +742,9 @@ const submitQuiz = async () => {
 }
 
 .btn-next:hover {
-  transform: translateX(4px);
   box-shadow: 0 10px 25px rgba(102, 126, 234, 0.5);
 }
 
-.btn-nav:active {
-  transform: scale(0.98);
-}
 
 /* Transitions */
 .fade-enter-active, .fade-leave-active {
@@ -817,7 +784,7 @@ const submitQuiz = async () => {
 /* Responsive Design */
 @media (max-width: 768px) {
   .quiz-wrapper {
-    padding: 1rem;
+    padding: 0.75rem;
   }
 
   .quiz-container {
@@ -825,7 +792,7 @@ const submitQuiz = async () => {
   }
 
   .question-container {
-    padding: 1.5rem;
+    padding: 1rem;
     min-height: 350px;
   }
 

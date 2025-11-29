@@ -1,7 +1,3 @@
-<script setup>
-
-</script>
-
 <template>
   <div class="quiz-start">
     <div class="welcome-badge">

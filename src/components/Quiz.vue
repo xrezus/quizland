@@ -117,7 +117,7 @@ const toggleMultiOption = (questionIndex, optionIndex) => {
   if (!Array.isArray(selectedAnswers.value[questionIndex])) {
     selectedAnswers.value[questionIndex] = [];
   }
-  
+
   const index = selectedAnswers.value[questionIndex].indexOf(optionIndex);
   if (index > -1) {
     selectedAnswers.value[questionIndex].splice(index, 1);
@@ -139,7 +139,7 @@ const nextQuestion = () => {
     const answer = selectedAnswers.value[currentQuestion.value];
     const hasAnswer = answer !== undefined && answer !== null;
     const isEmptyArray = Array.isArray(answer) && answer.length === 0;
-    
+
     // Если ответа нет вообще или это пустой массив (для множественного выбора)
     if (!hasAnswer || isEmptyArray) {
       // Активируем анимацию shake
@@ -173,7 +173,7 @@ const restartQuiz = () => {
 
 const submitQuiz = async () => {
   if (isSubmitting.value) return;
-  
+
   isSubmitting.value = true;
 
   // Формируем данные для отправки
@@ -249,101 +249,92 @@ const submitQuiz = async () => {
 
       <div class="question-container">
         <!-- Start Screen -->
-        <transition name="fade">
-          <QuizStart v-show="currentQuestion === -1"/>
-        </transition>
+        <QuizStart v-show="currentQuestion === -1"/>
 
         <!-- Questions -->
-        <transition-group name="slide-fade" mode="out-in">
-          <div class="question" v-for="(question, ind) in questions" :key="`question-${ind}`">
-            <div v-show="ind === currentQuestion" class="question-content">
-              <div class="question-header">
-                <div class="question-number">Вопрос {{ ind + 1 }}</div>
-                <h2 class="question-title">{{ question.text }}</h2>
+        <div class="question" v-for="(question, ind) in questions" :key="`question-${ind}`">
+          <div v-show="ind === currentQuestion" class="question-content">
+            <div class="question-header">
+              <div class="question-number">Вопрос {{ ind + 1 }}</div>
+              <h2 class="question-title">{{ question.text }}</h2>
+            </div>
+
+            <div class="options-grid" :class="{ 'animate__shakeX': shakeOptions && ind === currentQuestion }">
+              <!-- Single Choice Options (Radio) -->
+              <div class="option-card"
+                   v-show="!question.isMulti"
+                   v-for="(option, index) in questions[ind].options"
+                   :key="`single-${index}`"
+                   :class="{ 'option-selected': selectedAnswers[ind] === index }"
+                   @click="selectSingleOption(ind, index)">
+                <div class="option-radio">
+                  <div class="radio-outer">
+                    <div class="radio-inner" v-show="selectedAnswers[ind] === index"></div>
+                  </div>
+                </div>
+                <span class="option-label">{{ option.variant }}</span>
+
               </div>
-              
-              <div class="options-grid" :class="{ 'animate__shakeX': shakeOptions && ind === currentQuestion }">
-                <!-- Single Choice Options (Radio) -->
-                <div class="option-card"
-                     v-show="!question.isMulti"
-                     v-for="(option, index) in questions[ind].options"
-                     :key="`single-${index}`"
-                     :class="{ 'option-selected': selectedAnswers[ind] === index }"
-                     @click="selectSingleOption(ind, index)">
-                  <div class="option-radio">
-                    <div class="radio-outer">
-                      <div class="radio-inner" v-show="selectedAnswers[ind] === index"></div>
+
+              <!-- Multiple Choice Options (Checkbox) -->
+              <div class="option-card"
+                   v-show="question.isMulti"
+                   v-for="(option, index) in questions[ind].options"
+                   :key="`multi-${index}`"
+                   :class="{ 'option-selected': isOptionSelected(ind, index) }"
+                   @click="toggleMultiOption(ind, index)">
+                <div class="option-checkbox">
+                  <div class="checkbox-outer">
+                    <div class="checkbox-inner" v-show="isOptionSelected(ind, index)">
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+                      </svg>
                     </div>
                   </div>
-                  <span class="option-label">{{ option.variant }}</span>
-
                 </div>
-
-                <!-- Multiple Choice Options (Checkbox) -->
-                <div class="option-card"
-                     v-show="question.isMulti"
-                     v-for="(option, index) in questions[ind].options"
-                     :key="`multi-${index}`"
-                     :class="{ 'option-selected': isOptionSelected(ind, index) }"
-                     @click="toggleMultiOption(ind, index)">
-                  <div class="option-checkbox">
-                    <div class="checkbox-outer">
-                      <div class="checkbox-inner" v-show="isOptionSelected(ind, index)">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                          <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
-                        </svg>
-                      </div>
-                    </div>
-                  </div>
-                  <span class="option-label">{{ option.variant }}</span>
-                </div>
+                <span class="option-label">{{ option.variant }}</span>
               </div>
             </div>
           </div>
-        </transition-group>
+        </div>
 
         <!-- User Form -->
-        <transition name="fade">
-          <UserForm
-              v-show="currentQuestion === questions.length"
-              :userData="userData"
-              :isSubmitting="isSubmitting"
-              @submit="submitQuiz"
-          />
-        </transition>
+        <UserForm
+            v-show="currentQuestion === questions.length"
+            :userData="userData"
+            :isSubmitting="isSubmitting"
+            @submit="submitQuiz"
+        />
       </div>
 
       <!-- Footer with Navigation Buttons -->
       <div class="quiz-footer">
-        <transition name="fade">
-          <div v-show="currentQuestion === -1" class="start-button-container">
-            <button @click="nextQuestion" class="btn-start">
-              <span class="btn-icon">🎁</span>
-              <div class="btn-content">
-                <span class="btn-main-text">Узнать стоимость потолка сейчас</span>
-                <span class="btn-sub-text">+ получить гарантированный подарок за прохождение теста</span>
-              </div>
-            </button>
-          </div>
-        </transition>
+        <div v-show="currentQuestion === -1" class="start-button-container">
+          <button @click="nextQuestion" class="btn-start">
+            <span class="btn-icon">🎁</span>
+            <div class="btn-content">
+              <span class="btn-main-text">Узнать стоимость потолка сейчас</span>
+              <span class="btn-sub-text">+ получить гарантированный подарок за прохождение теста</span>
+            </div>
+          </button>
+        </div>
 
-        <transition name="fade">
-          <div v-show="currentQuestion >= 0 && currentQuestion < questions.length" class="navigation-buttons">
-            <button @click="prevQuestion" class="btn-nav btn-back" v-show="currentQuestion > 0">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>
-              </svg>
-              Назад
-            </button>
-            <div v-show="currentQuestion === 0"></div>
-            <button @click="nextQuestion" class="btn-nav btn-next">
-              Далее
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M8.59 16.59L10 18l6-6-6-6-1.41 1.41L13.17 12z"/>
-              </svg>
-            </button>
-          </div>
-        </transition>
+        <div v-show="currentQuestion >= 0 && currentQuestion < questions.length" class="navigation-buttons">
+          <button @click="prevQuestion" class="btn-nav btn-back" v-show="currentQuestion > 0">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>
+            </svg>
+            Назад
+          </button>
+          <div v-show="currentQuestion === 0"></div>
+          <button @click="nextQuestion" class="btn-nav btn-next">
+            Далее
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M8.59 16.59L10 18l6-6-6-6-1.41 1.41L13.17 12z"/>
+            </svg>
+          </button>
+        </div>
+
       </div>
     </div>
   </div>
@@ -500,6 +491,7 @@ const submitQuiz = async () => {
     transform: translate3d(10px, 0, 0);
   }
 }
+
 .animate__shakeX {
   -webkit-animation-name: shakeX;
   animation-name: shakeX;
@@ -765,7 +757,7 @@ const submitQuiz = async () => {
   font-size: 1.1rem;
   font-weight: 600;
   cursor: pointer;
-/*  transition: all 0.3s ease;*/
+  /*  transition: all 0.3s ease;*/
   min-width: 140px;
   justify-content: center;
 }

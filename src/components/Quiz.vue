@@ -6,6 +6,7 @@ import UserForm from "@/components/UserForm.vue";
 const currentQuestion = ref(-1);
 const selectedAnswers = ref({});
 const isSubmitting = ref(false);
+const shakeOptions = ref(false);
 const questions = ref([
   {
     text: "Где будет устанавливаться натяжной потолок?",
@@ -133,6 +134,23 @@ const isOptionSelected = (questionIndex, optionIndex) => {
 };
 
 const nextQuestion = () => {
+  // Проверяем, что ответ выбран
+  if (currentQuestion.value >= 0 && currentQuestion.value < questions.value.length) {
+    const answer = selectedAnswers.value[currentQuestion.value];
+    const hasAnswer = answer !== undefined && answer !== null;
+    const isEmptyArray = Array.isArray(answer) && answer.length === 0;
+    
+    // Если ответа нет вообще или это пустой массив (для множественного выбора)
+    if (!hasAnswer || isEmptyArray) {
+      // Активируем анимацию shake
+      shakeOptions.value = true;
+      setTimeout(() => {
+        shakeOptions.value = false;
+      }, 1000);
+      return;
+    }
+  }
+
   if (currentQuestion.value < questions.value.length + 1) {
     currentQuestion.value++;
   }
@@ -244,7 +262,7 @@ const submitQuiz = async () => {
                 <h2 class="question-title">{{ question.text }}</h2>
               </div>
               
-              <div class="options-grid">
+              <div class="options-grid" :class="{ 'animate__shakeX': shakeOptions && ind === currentQuestion }">
                 <!-- Single Choice Options (Radio) -->
                 <div class="option-card"
                      v-show="!question.isMulti"
@@ -456,6 +474,39 @@ const submitQuiz = async () => {
   width: 18px;
   height: 18px;
   flex-shrink: 0;
+}
+
+@keyframes shakeX {
+  from,
+  to {
+    -webkit-transform: translate3d(0, 0, 0);
+    transform: translate3d(0, 0, 0);
+  }
+
+  10%,
+  30%,
+  50%,
+  70%,
+  90% {
+    -webkit-transform: translate3d(-10px, 0, 0);
+    transform: translate3d(-10px, 0, 0);
+  }
+
+  20%,
+  40%,
+  60%,
+  80% {
+    -webkit-transform: translate3d(10px, 0, 0);
+    transform: translate3d(10px, 0, 0);
+  }
+}
+.animate__shakeX {
+  -webkit-animation-name: shakeX;
+  animation-name: shakeX;
+  -webkit-animation-duration: 1s;
+  animation-duration: 1s;
+  -webkit-animation-fill-mode: both;
+  animation-fill-mode: both;
 }
 
 @keyframes hintPulse {
